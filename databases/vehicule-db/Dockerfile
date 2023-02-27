@@ -1,1 +1,1 @@
-FROM postgres:15-alpine AS atelier-db
+FROM postgres:15-alpine AS ms-db

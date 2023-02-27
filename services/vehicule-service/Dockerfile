@@ -1,4 +1,4 @@
-FROM python:3.10-alpine as atelier-service
+FROM python:3.10-alpine as vehicule-service
 WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
