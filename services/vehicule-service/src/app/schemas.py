@@ -14,3 +14,11 @@ class MarqueCreate(BaseModel):
 
 class MarqueUpdate(BaseModel):
     description: str 
+
+
+class CategorieCreate(BaseModel):
+    marque: str
+    description: str 
+
+class CategorieUpdate(BaseModel):
+    description: str 

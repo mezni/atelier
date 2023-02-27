@@ -91,3 +91,46 @@ async def search_marque(session: AsyncSession, name: str):
         q = await session.execute(select(models.Marque).where(func.lower(models.Marque.marque).like(func.lower('%'+name+'%'))))
     return q.scalars().all()
 
+
+async def get_categorie_by_id(session: AsyncSession, id: int):
+    q = await session.execute(select(models.Categorie).where(models.Categorie.id == id))
+    return q.scalars().first()
+
+async def get_categorie_by_name(session: AsyncSession, name: str):
+    q = await session.execute(select(models.Categorie).where(func.lower(models.Categorie.categorie) == func.lower(name)))
+    return q.scalars().first()
+
+async def get_categorie_all(session: AsyncSession, skip: int, limit: int):
+    q = await session.execute(select(models.Categorie))
+    result = q.scalars().all()
+    return result[skip:limit+skip]
+
+async def create_categorie(session: AsyncSession, payload: dict):
+    item_db=models.Categorie(**payload)
+    session.add(item_db)
+    await session.commit()
+    await session.refresh(item_db)
+    return item_db
+
+async def update_categorie(session: AsyncSession, id: int, payload: dict):
+    db_item = await get_categorie_by_id(session=session, id=id)
+    if payload:
+        payload_data = dict([(k, v) for k, v in payload.items() if (v)])
+        for key, value in payload_data.items():
+            setattr(db_item, key, value)
+        session.add(db_item)
+        await session.commit()
+        await session.refresh(db_item)
+        return db_item   
+
+async def delete_categorie(session: AsyncSession, id: int):
+    db_item = await get_categorie_by_id(session=session, id=id)
+    await session.delete(db_item)
+    await session.commit()
+    return {"status": "deleted"}
+
+async def search_categorie(session: AsyncSession, name: str):
+    if name != "":
+        q = await session.execute(select(models.Categorie).where(func.lower(models.Categorie.categorie).like(func.lower('%'+name+'%'))))
+    return q.scalars().all()
+

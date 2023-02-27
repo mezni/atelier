@@ -45,6 +45,7 @@ class Vehicule(Base):
                         nullable=False, server_default=text("now()"))
     updated_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text("now()"))
+    modele_id   = Column(Integer, ForeignKey("modeles.id"), index=True)
                         
 class Kilometrage(Base):
     __tablename__   = 'kilometrages'
