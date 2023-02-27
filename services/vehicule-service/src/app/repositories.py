@@ -134,3 +134,57 @@ async def search_categorie(session: AsyncSession, name: str):
         q = await session.execute(select(models.Categorie).where(func.lower(models.Categorie.categorie).like(func.lower('%'+name+'%'))))
     return q.scalars().all()
 
+async def get_vehicule_by_id(session: AsyncSession, id: str):
+    q = await session.execute(select(models.Vehicule).where(models.Vehicule.id == id))
+    return q.scalars().first()
+
+async def get_vehicule_by_immatriculation(session: AsyncSession, immatriculation: str):
+    q = await session.execute(select(models.Vehicule).where(func.lower(models.Vehicule.immatriculation) == func.lower(immatriculation)))
+    return q.scalars().first()    
+    
+async def create_vehicule(session: AsyncSession, payload: dict):
+    kilometrage = payload.pop("kilometrage")
+    item_db=models.Vehicule(**payload)
+    session.add(item_db)
+    await session.commit()
+    await session.refresh(item_db)
+    
+    vehicule_id = item_db.id
+    kilometrage["vehicule_id"]=vehicule_id
+    item_db=models.Kilometrage(**kilometrage)
+    session.add(item_db)
+    await session.commit()
+    await session.refresh(item_db)
+    
+    _ = kilometrage.pop("vehicule_id")
+    payload["vehicule_id"]=vehicule_id
+    payload["kilometrage"]=kilometrage
+    return payload 
+
+async def get_kilometrage_by_vehicule_id(session: AsyncSession, id: str):
+    q = await session.execute(select(models.Kilometrage).where(models.Kilometrage.vehicule_id == id))
+    return q.scalars().first()
+
+async def get_kilometrage_by_id_last(session: AsyncSession, id: str):
+    q = await session.execute(select(models.Kilometrage).where(models.Kilometrage.id == id).order_by(models.Kilometrage.date_mesure.desc()))
+    return q.scalars().first()
+
+async def get_vehicule_all(session: AsyncSession, skip: int, limit: int):
+    q = await session.execute(select(models.Vehicule))
+    result = q.scalars().all()
+    mapped_result =[]
+    vehicule = {}
+    for r in result:
+        vehicule["id"]=r.id
+        vehicule["immatriculation"]=r.immatriculation
+        vehicule["modele_id"]=r.modele_id
+        vehicule["kilometrage"]={}
+        kilometrage = await get_kilometrage_by_vehicule_id(session=session, id=r.id)       
+        if kilometrage:
+            vehicule["kilometrage"]["kilometrage"]=kilometrage.kilometrage
+            vehicule["kilometrage"]["date_mesure"]=kilometrage.date_mesure
+
+#        vehicule["kilometrage"]["kilometrage"] = kilometrage.kilometrage
+#        vehicule["kilometrage"]["date_mesure"] = kilometrage.date_mesure
+        mapped_result.append(vehicule)
+    return mapped_result[skip:limit+skip]

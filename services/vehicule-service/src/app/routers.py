@@ -191,3 +191,33 @@ async def search_categorie(name: str, session: AsyncSession = Depends(get_sessio
         session=session, name=name)
     return result 
 
+
+vehicule_router = APIRouter()
+
+@vehicule_router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_vehicule(payload: schemas.VehiculeCreate, session: AsyncSession = Depends(get_session)):
+    entity_name = "vehicule"
+    msg_already_exists = entity_name+" existe deja"
+    db_item = await repositories.get_vehicule_by_immatriculation(session=session, immatriculation=payload.immatriculation)
+    if db_item:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail=msg_already_exists)    
+    result = await repositories.create_vehicule(
+        session=session, payload=payload.dict())
+    return result
+
+@vehicule_router.get("/{id}", status_code=status.HTTP_200_OK)
+async def get_vehicule(id: str, session: AsyncSession = Depends(get_session)):
+    entity_name = "vehicule"
+    msg_does_not_exists = entity_name+" n'existe pas"
+
+    result = await repositories.get_vehicule_by_id(session=session, id=id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=msg_does_not_exists)
+    return result
+
+@vehicule_router.get("/", status_code=status.HTTP_200_OK)
+async def get_vehicules(skip: int = 0, limit: int = 100, session: AsyncSession = Depends(get_session)):
+    result = await repositories.get_vehicule_all(session=session, skip=skip, limit=limit)
+    return result

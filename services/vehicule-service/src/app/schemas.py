@@ -1,3 +1,6 @@
+from typing import List
+from datetime import datetime, date, time
+from uuid import UUID
 from pydantic import BaseModel
 
 
@@ -22,3 +25,11 @@ class CategorieCreate(BaseModel):
 
 class CategorieUpdate(BaseModel):
     description: str 
+
+class Kilometrage(BaseModel):
+    kilometrage: int
+    date_mesure: date
+    
+class VehiculeCreate(BaseModel):
+    immatriculation: str 
+    kilometrage: Kilometrage
